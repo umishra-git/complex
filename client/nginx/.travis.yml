@@ -1,0 +1,21 @@
+sudo: required
+services:
+    - docker
+before-install:
+    - docker build -t umishra/complex -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run umishra/complex npm test -- --coverage
+
+after_success:
+    - docker build -t umishra/complex-client ./client
+    - docker build -t umishra/complex-nginx ./nginx
+    - docker build -t umishra/complex-server ./server
+    - docker build -t umishra/complex-worker ./worker
+    #Login to Docker
+    - echo "$DOCKER_PASSWORD"| docker login -u "$DOCKER_ID" --password-stdin
+    #Take these images and push them to docker hub
+    - docker push umishra/complex-client
+    - docker push umishra/complex-nginx
+    - docker push umishra/complex-server
+    - docker push umishra/complex-worker
